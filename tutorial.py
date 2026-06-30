@@ -459,7 +459,7 @@ def _(Path, model_selector):
 def _(config_path, mo):
     mo.md(rf"""
     The training config has been written to ``{config_path}``.
-    """
+    """)
     # A tensor-product variant can be created by changing ``self_interaction`` to ``tensor_product`` and adjusting ``target_method`` accordingly.
     # """)
     return
