@@ -1,7 +1,8 @@
 # example of config file for a rank2 tensor learning using a TensorNequIP model
 
 general:
-  progress: logged
+  progress: rich
+  log_level: DEBUG
 
 model:
   offset:

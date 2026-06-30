@@ -352,8 +352,9 @@ def _(Path, model_selector):
                     "CUTOFF: 5.533",
                     "",
                     "general:",
-                    "  progress: logged",
+                    "  progress: rich",
                     "  run_id: train-nequip-tensor",
+                    "  log_level: DEBUG",
                     "",
                     "model:",
                     "  offset:",
@@ -407,8 +408,9 @@ def _(Path, model_selector):
                     "CUTOFF: 5.533",
                     "",
                     "general:",
-                    "  progress: logged",
+                    "  progress: rich",
                     "  run_id: train-mace-tensor",
+                    "  log_level: DEBUG",
                     "",
                     "model:",
                     "  offset:",
@@ -460,8 +462,6 @@ def _(config_path, mo):
     mo.md(rf"""
     The training config has been written to ``{config_path}``.
     """)
-    # A tensor-product variant can be created by changing ``self_interaction`` to ``tensor_product`` and adjusting ``target_method`` accordingly.
-    # """)
     return
 
 
@@ -551,8 +551,8 @@ def _(mo):
 
 @app.cell
 def _(calculator, cartesian_antisymm, cartesian_symm, test, torch):
-    for frm in test:
-        calculator.calculate(frm, properties=['tensor'])
+    for frm_1 in test:
+        calculator.calculate(frm_1, properties=['tensor'])
         tensor = calculator.results['tensor']
         tensor = torch.from_numpy(tensor)
         symm_1 = torch.cat((tensor[..., :1], tensor[..., 4:]), dim=-1)
@@ -560,7 +560,7 @@ def _(calculator, cartesian_antisymm, cartesian_symm, test, torch):
         tensor_antisymm = cartesian_antisymm.to_cartesian(tensor[..., 1:4])
         tensor = tensor_symm + tensor_antisymm
         tensor = tensor.cpu().numpy()
-        frm.arrays['ms_ML'] = tensor
+        frm_1.arrays['ms_ML'] = tensor
     predictions_completed = True
     return
 
@@ -597,10 +597,10 @@ def _():
 def _(test):
     # soprano expects the tensors to have the shape (n_atoms, 3, 3)
     # Guard ms reshape: only reshape if not already 3-D (avoids double-reshape on model switch)
-    for frm in test:
-        if frm.arrays['ms'].ndim == 2:
-            frm.arrays['ms'] = frm.arrays['ms'].reshape(-1, 3, 3)
-        frm.arrays['ms_ML'] = frm.arrays['ms_ML'].reshape(-1, 3, 3)
+    for frm_2 in test:
+        if frm_2.arrays['ms'].ndim == 2:
+            frm_2.arrays['ms'] = frm_2.arrays['ms'].reshape(-1, 3, 3)
+        frm_2.arrays['ms_ML'] = frm_2.arrays['ms_ML'].reshape(-1, 3, 3)
     reshaping_completed = True
     return
 
@@ -661,6 +661,83 @@ def _(Si_inds, asymmetry_dft, asymmetry_ml, plt):
     plt.gcf()
     return
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Challenge 1: Test on unseen structures
+
+    In the main tutorial, the model is evaluated on a random split of the same amorphous silica dataset used for training. A more demanding test is to apply the trained model to **unseen structures** that are chemically related but structurally different, such as large amorphous SiO\(_2\) models or zeolite frameworks.
+
+    This kind of test is useful because it probes whether the model is learning a genuinely transferable local environment representation, rather than only interpolating within the training distribution.
+
+    In the next cells, you can download an unseen test set. Evaluate the same trained model on it!
+    """)
+    return
+
+@app.cell
+def _(Path):
+    # Placeholder for an unseen test dataset.
+    # Replace the URL below with the dataset you want to use for the tutorial.
+    from urllib.request import urlretrieve
+
+    unseen_xyz = Path("unseen_test.xyz")
+    if not unseen_xyz.exists():
+        urlretrieve(
+            "https://github.com/cbenmahm/anistropic-nmr-parameters-data/raw/refs/heads/main/data/aSiO2_models/aSiO2_fast_ml_qm_ms_efg.xyz",
+            unseen_xyz,
+        )
+    return (unseen_xyz,)
+
+@app.cell
+
+def _():
+    #write your code here
+    ...
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Challenge 2: Fine-tune a pretrained model on zeolites
+
+    Another useful workflow is **fine-tuning**. Instead of training a model from scratch on a smaller zeolite dataset, we can start from the silica model trained above and fine-tune it on the new data.
+
+    This is often a practical strategy when the new dataset is limited in size or spans a narrower chemical space. The idea is to reuse the local chemical knowledge already learned by the pretrained model, then adapt it to the zeolite domain.
+
+    The next cells provide the zeolite dataset.
+    
+    Two minimal change need to be made to the config file:
+    
+    1. Instead of defining the model hyperparameters, we provide the path to the already pre-trained model:
+    ```yaml
+          model:
+            +load_model_component:
+                path: path/to/model.pt
+                key: many-body
+    ```
+    1. Repalce the paths of the previous training/validation sets with the new ones
+          
+    You might find useful to reduce the learning rate as well.
+    """)
+    return
+
+
+@app.cell
+def _(Path):
+    # Placeholder for a zeolite fine-tuning dataset.
+    # Replace the URL below with the dataset you want to use for the tutorial.
+    from urllib.request import urlretrieve
+
+    zeolite_xyz = Path("zeolite_train.xyz")
+    if not zeolite_xyz.exists():
+        urlretrieve(
+            "https://github.com/cbenmahm/anistropic-nmr-parameters-data/raw/refs/heads/main/data/hypothetical_zeolites/hypozeo_ml_dft_isd_tp_ms_efg.xyz",
+            zeolite_xyz,
+        )
+    return (zeolite_xyz,)
+
+def _():
+    #write your code here
+    ...
 
 if __name__ == "__main__":
     app.run()
