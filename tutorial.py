@@ -15,7 +15,7 @@
 
 import marimo
 
-__generated_with = "0.23.9"
+__generated_with = "0.23.11"
 app = marimo.App(
     css_file="/usr/local/_marimo/custom.css",
     auto_download=["ipynb"],
@@ -48,7 +48,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    This has been adapted as a proof of principle from here:
+    This has been adapted from here for the CCP-NC NMR/ML Masterclass 2026 :
     https://github.com/cbenmahm/graph-pes/blob/update_doc/docs/source/quickstart/atomic-tensor-example.ipynb
 
     ``graph-pes`` provides models that target atomic "tensorial" properties, ranging from atomic energies and charges, dipoles, NMR anisotropic parameters, to higher rank tensors.
@@ -59,7 +59,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/vldgroup/graph-pes/blob/main/docs/source/quickstart/atomic-tensor-example.py)
+    [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/cbenmahm/ml-nmr-tutorial/blob/main/tutorial.py)
 
     Open this notebook in [molab](https://molab.marimo.io), then attach a GPU from the notebook specs button in the app header.
     """)
@@ -96,30 +96,31 @@ def _(mo):
     mo.md(r"""
     ## Generalising to other tensor properties
 
-Although this tutorial focuses on magnetic shielding tensors, the underlying tensor models are completely agnostic to the physical quantity being learned. Any atomic scalar or tensor property that can be decomposed into irreducible representations—,such as atomic energies, electric field gradients (EFGs), or force constants,can be learned using exactly the same workflow. In practice, the only change required is to specify the target irreducible representations (`target_tensor_irreps` in the configuration file); the model architecture and training procedure remain unchanged.
+    Although this tutorial focuses on magnetic shielding tensors, the underlying tensor models are completely agnostic to the physical quantity being learned. Any atomic scalar or tensor property that can be decomposed into irreducible representations—,such as atomic energies, electric field gradients (EFGs), or force constants,can be learned using exactly the same workflow. In practice, the only change required is to specify the target irreducible representations (`target_tensor_irreps` in the configuration file); the model architecture and training procedure remain unchanged.
 
-Tensor properties are specified using the **e3nn irreducible representation (irrep) notation**. Each irrep is written as $\ell p$, where:
+    Tensor properties are specified using the **e3nn irreducible representation (irrep) notation**. Each irrep is written as $\ell p$, where:
 
-- $\ell$ is the angular momentum order:
-  - `0` = scalar 
-  - `1` = vector 
-  - `2` = traceless symmetric part of rank-2 tensor 
-  - ...
+    - $\ell$ is the angular momentum order:
+      - `0` = scalar
+      - `1` = vector
+      - `2` = traceless symmetric part of rank-2 tensor
+      - ...
 
-- `p` is the parity:
-  - `e` = even (unchanged under spatial inversion)
-  - `o` = odd (changes sign under spatial inversion)
+    - `p` is the parity:
+      - `e` = even (unchanged under spatial inversion)
+      - `o` = odd (changes sign under spatial inversion)
 
-Some common examples are:
+    Some common examples are:
 
-| Irrep | Physical meaning | Example |
-|:------:|------------------|---------|
-| `0e` | Scalar | Atomic energy, isotropic shielding |
-| `1o` | Polar vector | Force, electric field |
-| `1e` | Axial vector (pseudovector) | angular momentum |
-| `2e` | Symmetric traceless rank-2 tensor | CSA, EFG |
-          """)
+    | Irrep | Physical meaning | Example |
+    |:------:|------------------|---------|
+    | `0e` | Scalar | Atomic energy, isotropic shielding |
+    | `1o` | Polar vector | Force, electric field |
+    | `1e` | Axial vector (pseudovector) | angular momentum |
+    | `2e` | Symmetric traceless rank-2 tensor | CSA, EFG |
+    """)
     return
+
 
 @app.cell(hide_code=True)
 def _(mo):
@@ -135,13 +136,13 @@ def _(mo):
     - a scalar part $\ell=0$: the trace, a rotationally invariant scalar (dimension=1).
     - a pseudovector part $\ell=1$: dual to the antisymmetric part (dimension=3)
     - a quadropole part $\ell=2$: the traceless symmetric part (dimension=5)
-          
+
     The dimensions satisfy $1+3+5=9$, matching the nine Cartesian components of the original tensor.
 
     In equivariant models, such as `MACE` and `NequIP`, we use features that transform irreducibly under rotations. `e3nn` provides tools to compute exactly these irreducible components from Cartesian tensors, allowing us to use them directly as equivariant features or targets.
 
-    The symmetry-aware conversion between the Cartesian components and the corresponding irreducible spherical representation is handled by the class `e3nn.io.CartesianTensor`.     
-""")
+    The symmetry-aware conversion between the Cartesian components and the corresponding irreducible spherical representation is handled by the class `e3nn.io.CartesianTensor`.
+    """)
     return
 
 
@@ -154,10 +155,10 @@ def _(mo):
     ```yaml
     target_tensor_irreps: "0e + 1e + 2e"
     ```
-    
+
     This means the model is asked to learn the isotropic scalar part (0e), the antisymmetric part (1e), and the traceless symmetric tensor part (2e) of the shielding tensor. Changing this single line allows the same model to learn many other atomic properties with the same overall workflow.
     Changing this single line allows the same model to learn many other atomic properties:
-    
+
     | Property | `target_tensor_irreps` |
     |----------|------------------------|
     | Atomic energy | `"0e"` |
@@ -165,7 +166,7 @@ def _(mo):
     | Electric field gradients (EFG) | `"2e"` |
     | Full magnetic shielding tensor | `"0e + 1o + 2e"` |
     | Symmetric magnetic shielding tensor | `"0e + 2e"` |
-""")
+    """)
     return
 
 
@@ -203,7 +204,7 @@ def _(Path):
             "https://github.com/cbenmahm/anistropic-nmr-parameters-data/raw/refs/heads/main/data/train_test/train.xyz",
             train_xyz,
         )
-    return (train_xyz,)
+    return train_xyz, urlretrieve
 
 
 @app.cell
@@ -278,12 +279,13 @@ def _(cartesian_antisymm, cartesian_symm, np, structures, torch):
     for frm, n in zip(structures, n_atoms_per_frame):
         frm.set_array("tensor" ,ms_all[start : start + n])
         start += n
-    return
+    return (n_atoms_per_frame,)
 
 
 @app.cell
-def _(structures):
+def _(n_atoms_per_frame, structures):
     import ase.io
+    print(f"There are: {set(n_atoms_per_frame)} atoms per structure")
 
     train, val, test = structures.random_split([0.8, 0.1, 0.1])
 
@@ -301,7 +303,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     model_selector = mo.ui.dropdown(
         options={
@@ -335,7 +337,7 @@ def _(mo):
 def _(mo, model_selector):
     arch_name = "TensorMACE" if model_selector.value == "mace" else "TensorNequIP"
     mo.md(f"""
-    The config file is no longer available for download, so we create it inline below. It uses a lightweight ``{arch_name}`` model with a learnable per-element tensor offset, and trains for just a few epochs as a demonstration.
+    We create the config below based on the architecture requested. It uses a lightweight ``{arch_name}`` model with a learnable per-element tensor offset, and trains for just a few epochs as a demonstration.
     """)
     return
 
@@ -371,6 +373,7 @@ def _(Path, model_selector):
                     "      props: tensor",
                     "      layers: 4",
                     "      target_tensor_irreps: 0e + 1o + 2e",
+                    "      prune_last_layer: false",
                     "      target_method: direct",
                     "",
                     "data:",
@@ -476,30 +479,95 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    The models are trained in the same way as the usual ``GraphPES`` models using the [graph-pes-train](https://vldgroup.github.io/graph-pes/cli/graph-pes-train/root.html) command. If a trained model already exists, we skip this step so the notebook remains quick to re-run.
+    The models are trained using the [graph-pes-train](https://vldgroup.github.io/graph-pes/cli/graph-pes-train/root.html) command.
+
+    Choose whether to **train a new model** or **load a previously trained one**:
     """)
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    model_action = mo.ui.radio(
+        options=["Train new model", "Load existing model"],
+        value="Train new model",
+        label="Action",
+    )
+    model_action
+    return (model_action,)
+
+
+@app.cell(hide_code=True)
+def _(Path, mo, model_action, model_selector):
+    model_name_ui = "train-nequip-tensor" if model_selector.value == "nequip" else "train-mace-tensor"
+    existing_paths = sorted(
+        Path("graph-pes-results").glob("*/model.pt"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+
+    if model_action.value == "Load existing model":
+        if existing_paths:
+            load_model_dropdown = mo.ui.dropdown(
+                options={str(p): p for p in existing_paths},
+                value=str(existing_paths[0]),
+                label="Select a trained model",
+            )
+            _display = load_model_dropdown
+        else:
+            load_model_dropdown = None
+            _display = mo.callout(mo.md("No trained models found in `graph-pes-results/`. Train one first."), kind="warn")
+    else:
+        load_model_dropdown = None
+        _display = mo.md("")
+    _display
+    return load_model_dropdown, model_name_ui
+
+
+@app.cell(hide_code=True)
+def _(mo, model_action):
+    train_button = mo.ui.run_button(label="Start training", disabled=model_action.value != "Train new model")
+    train_button
+    return (train_button,)
+
+
 @app.cell
-def _(Path, config_path, model_selector, subprocess):
-    model_name = "train-nequip-tensor" if model_selector.value == "nequip" else "train-mace-tensor"
+def _(
+    Path,
+    config_path,
+    load_model_dropdown,
+    mo,
+    model_action,
+    model_name_ui,
+    subprocess,
+    train_button,
+):
+    _should_stop = (
+        (model_action.value == "Train new model" and not train_button.value)
+        or (model_action.value == "Load existing model" and load_model_dropdown is None)
+    )
+    mo.stop(
+        _should_stop,
+        mo.md(
+            "Click **Start training** above to begin, or switch to **Load existing model**."
+            if model_action.value == "Train new model"
+            else "No trained models found. Train a model first."
+        ),
+    )
 
-    # Robustly find any existing version of this model (with PyTorch Lightning suffixes)
-    paths = sorted(Path("graph-pes-results").glob(f"{model_name}*/model.pt"), key=lambda p: p.stat().st_mtime)
-    existing_model = paths[-1] if paths else None
-
-    if existing_model:
-        model_path = existing_model
+    if model_action.value == "Load existing model":
+        model_path = Path(load_model_dropdown.value)
     else:
         subprocess.run(
-            f"graph-pes-train {config_path} general/run_id={model_name}",
+            f"graph-pes-train {config_path} general/run_id={model_name_ui}",
             shell=True,
             check=True,
         )
-        # Find the newly created model
-        paths = sorted(Path("graph-pes-results").glob(f"{model_name}*/model.pt"), key=lambda p: p.stat().st_mtime)
-        model_path = paths[-1] if paths else Path(f"graph-pes-results/{model_name}/model.pt")
+        trained_paths = sorted(
+            Path("graph-pes-results").glob(f"{model_name_ui}*/model.pt"),
+            key=lambda p: p.stat().st_mtime,
+        )
+        model_path = trained_paths[-1] if trained_paths else Path(f"graph-pes-results/{model_name_ui}/model.pt")
     return (model_path,)
 
 
@@ -560,9 +628,9 @@ def _(calculator, cartesian_antisymm, cartesian_symm, test, torch):
         tensor_antisymm = cartesian_antisymm.to_cartesian(tensor[..., 1:4])
         tensor = tensor_symm + tensor_antisymm
         tensor = tensor.cpu().numpy()
-        frm_1.arrays['ms_ML'] = tensor
+        frm_1.set_array('ms_ML', tensor)
     predictions_completed = True
-    return
+    return (predictions_completed,)
 
 
 @app.cell(hide_code=True)
@@ -594,27 +662,28 @@ def _():
 
 
 @app.cell
-def _(test):
-    # soprano expects the tensors to have the shape (n_atoms, 3, 3)
+def _(predictions_completed, test):
+    # Some packages expect the tensors to have the shape (n_atoms, 3, 3)
     # Guard ms reshape: only reshape if not already 3-D (avoids double-reshape on model switch)
-    for frm_2 in test:
-        if frm_2.arrays['ms'].ndim == 2:
-            frm_2.arrays['ms'] = frm_2.arrays['ms'].reshape(-1, 3, 3)
-        frm_2.arrays['ms_ML'] = frm_2.arrays['ms_ML'].reshape(-1, 3, 3)
+    if predictions_completed:
+        for frm_2 in test:
+            if frm_2.arrays['ms'].ndim == 2:
+                frm_2.arrays['ms'] = frm_2.arrays['ms'].reshape(-1, 3, 3)
+            frm_2.arrays['ms_ML'] = frm_2.arrays['ms_ML'].reshape(-1, 3, 3)
     reshaping_completed = True
-    return
+    return (reshaping_completed,)
 
 
 @app.cell
-def _(nmr, np, test):
+def _(nmr, np, reshaping_completed, test):
+    if reshaping_completed:
+        shielding_dft = np.concatenate(
+            [nmr.MSIsotropy.get(frame, tag="ms") for frame in test]
+        )
 
-    shielding_dft = np.concatenate(
-        [nmr.MSIsotropy.get(frame, tag="ms") for frame in test]
-    )
-
-    shielding_ml = np.concatenate(
-        [nmr.MSIsotropy.get(frame, tag="ms_ML") for frame in test]
-    )
+        shielding_ml = np.concatenate(
+            [nmr.MSIsotropy.get(frame, tag="ms_ML") for frame in test]
+        )
     return shielding_dft, shielding_ml
 
 
@@ -640,14 +709,15 @@ def _(AtomSelection, model_path, np, plt, shielding_dft, shielding_ml, test):
 
 
 @app.cell
-def _(nmr, np, test):
-    asymmetry_dft = np.concatenate(
-        [nmr.MSAsymmetry.get(frame, tag="ms") for frame in test]
-    )
+def _(nmr, np, reshaping_completed, test):
+    if reshaping_completed:
+        asymmetry_dft = np.concatenate(
+            [nmr.MSAsymmetry.get(frame, tag="ms") for frame in test]
+        )
 
-    asymmetry_ml = np.concatenate(
-        [nmr.MSAsymmetry.get(frame, tag="ms_ML") for frame in test]
-    )
+        asymmetry_ml = np.concatenate(
+            [nmr.MSAsymmetry.get(frame, tag="ms_ML") for frame in test]
+        )
     return asymmetry_dft, asymmetry_ml
 
 
@@ -660,6 +730,7 @@ def _(Si_inds, asymmetry_dft, asymmetry_ml, plt):
     plt.ylabel("ML asymmetry")
     plt.gcf()
     return
+
 
 @app.cell(hide_code=True)
 def _(mo):
@@ -674,11 +745,11 @@ def _(mo):
     """)
     return
 
+
 @app.cell
-def _(Path):
+def _(Path, urlretrieve):
     # Placeholder for an unseen test dataset.
     # Replace the URL below with the dataset you want to use for the tutorial.
-    from urllib.request import urlretrieve
 
     unseen_xyz = Path("unseen_test.xyz")
     if not unseen_xyz.exists():
@@ -686,13 +757,14 @@ def _(Path):
             "https://github.com/cbenmahm/anistropic-nmr-parameters-data/raw/refs/heads/main/data/aSiO2_models/aSiO2_fast_ml_qm_ms_efg.xyz",
             unseen_xyz,
         )
-    return (unseen_xyz,)
+    return
+
 
 @app.cell
-
 def _():
-    # write your code here
     ...
+    return
+
 
 @app.cell(hide_code=True)
 def _(mo):
@@ -704,9 +776,9 @@ def _(mo):
     This is often a practical strategy when the new dataset is limited in size or spans a narrower chemical space. The idea is to reuse the local chemical knowledge already learned by the pretrained model, then adapt it to the zeolite domain.
 
     The next cells provide the zeolite dataset.
-    
+
     Two minimal change need to be made to the config file:
-    
+
     1. Instead of defining the model hyperparameters, we provide the path to the already pre-trained model:
     ```yaml
           model:
@@ -715,17 +787,16 @@ def _(mo):
                 key: many-body
     ```
     1. Repalce the paths of the previous training/validation sets with the new ones
-          
+
     You might find useful to reduce the learning rate as well.
     """)
     return
 
 
 @app.cell
-def _(Path):
+def _(Path, urlretrieve):
     # Placeholder for a zeolite fine-tuning dataset.
     # Replace the URL below with the dataset you want to use for the tutorial.
-    from urllib.request import urlretrieve
 
     zeolite_xyz = Path("zeolite_train.xyz")
     if not zeolite_xyz.exists():
@@ -733,12 +804,15 @@ def _(Path):
             "https://github.com/cbenmahm/anistropic-nmr-parameters-data/raw/refs/heads/main/data/hypothetical_zeolites/hypozeo_ml_dft_isd_tp_ms_efg.xyz",
             zeolite_xyz,
         )
-    return (zeolite_xyz,)
+    return
+
 
 @app.cell
 def _():
     # write your code here
     ...
+    return
+
 
 if __name__ == "__main__":
     app.run()
