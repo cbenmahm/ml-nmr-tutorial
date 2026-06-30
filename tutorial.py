@@ -735,6 +735,7 @@ def _(Path):
         )
     return (zeolite_xyz,)
 
+@app.cell
 def _():
     # write your code here
     ...
