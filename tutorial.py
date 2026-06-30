@@ -691,7 +691,7 @@ def _(Path):
 @app.cell
 
 def _():
-    #write your code here
+    # write your code here
     ...
 
 @app.cell(hide_code=True)
@@ -736,7 +736,7 @@ def _(Path):
     return (zeolite_xyz,)
 
 def _():
-    #write your code here
+    # write your code here
     ...
 
 if __name__ == "__main__":
