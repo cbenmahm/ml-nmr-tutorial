@@ -1,0 +1,57 @@
+# example of config file for a rank2 tensor learning using a TensorMACE model
+
+general:
+  progress: logged
+
+model:
+  offset:
+    +LearnableTensorOffset:
+      length: 9
+  many_body:
+    +TensorMACE:
+      elements: ["Si", "O"]
+      cutoff: 5.533
+      radial_features: 64
+      features:
+        node_irreps: 128x0e+128x1o+128x2e+128x3o
+        edge_irreps: 0e + 1o + 2e + 3o
+      props: tensor
+      layers: 2
+      target_tensor_irreps: 0e + 1e + 2e # change this to match your target
+      prune_last_layer: false
+      target_method: "tensor_product"
+      irrep_tp: "3o"
+      number_of_tps: 64
+
+data:
+  train: train-nmr.xyz
+  valid: val-nmr.xyz
+  test: test-nmr.xyz
+
+loss:
+  +PropertyLoss:
+    property: tensor
+    metric: RMSE
+
+fitting:
+  trainer_kwargs:
+    max_epochs: 3000
+    accelerator: auto
+
+  early_stopping:
+    patience: 100
+
+  optimizer:
+    name: AdamW
+    lr: 0.003
+
+  scheduler:
+    name: ReduceLROnPlateau
+    patience: 25
+    factor: 0.8
+
+  loader_kwargs:
+    batch_size: 5
+    num_workers: 4
+
+wandb: null
