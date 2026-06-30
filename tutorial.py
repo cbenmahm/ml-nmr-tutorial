@@ -98,7 +98,7 @@ def _(mo):
 
 Although this tutorial focuses on magnetic shielding tensors, the underlying tensor models are completely agnostic to the physical quantity being learned. Any atomic scalar or tensor property that can be decomposed into irreducible representations—,such as atomic energies, electric field gradients (EFGs), or force constants,can be learned using exactly the same workflow. In practice, the only change required is to specify the target irreducible representations (`target_tensor_irreps` in the configuration file); the model architecture and training procedure remain unchanged.
 
-Tensor properties are specified using the **e3nn irreducible representation (irrep) notation**. Each irrep is written as `$\ell$p`, where:
+Tensor properties are specified using the **e3nn irreducible representation (irrep) notation**. Each irrep is written as $\ell p$, where:
 
 - $\ell$ is the angular momentum order:
   - `0` = scalar 
@@ -125,9 +125,10 @@ Some common examples are:
 def _(mo):
     mo.md(r"""
     ## From a Cartesian tensor to irreps
-          A generic rank 2 Cartesian tensor $T$ (of size 3 $\times$ 3), e.g. magnetic shielding tensor, can be decomposed into symmetric and antisymmetric parts:
+    A generic rank 2 Cartesian tensor $T$ (of size 3 $\times$ 3), e.g. magnetic shielding tensor, can be decomposed into symmetric and antisymmetric parts:
 
-    $$T_{\mathrm{symm}} = \dfrac{1}{2}(T+T^\mathrm{T}), \quad T_{\mathrm{antisymm}} = \dfrac{1}{2}(T-T^\mathrm{T})$$
+    - $T_{\mathrm{symm}} = \dfrac{1}{2}(T+T^\mathrm{T})$
+    - $T_{\mathrm{antisymm}} = \dfrac{1}{2}(T-T^\mathrm{T})$
 
     These Cartesian coordinates have their spherical conterparts, that are usually expressed in terms of spherical harmonics (SHs). In this case we obtain the following:
 
@@ -148,23 +149,23 @@ def _(mo):
 def _(mo):
     mo.md(r"""
     ## What does this mean for magnetic shielding?
-          Magnetic shielding tensors are usually symmetric, so the antisymmetric (1o) component is typically zero. That is why the target for magnetic shielding is commonly written as:
+    Magnetic shielding tensors are usually symmetric, so the antisymmetric (1o) component is typically zero. That is why the target for magnetic shielding is commonly written as:
 
-          ```yaml
-          target_tensor_irreps: "0e + 1e + 2e"
-          ```
-
-          This means the model is asked to learn the isotropic scalar part (0e), the antisymmetric part (1e), and the traceless symmetric tensor part (2e) of the shielding tensor. Changing this single line allows the same model to learn many other atomic properties with the same overall workflow.
-          Changing this single line allows the same model to learn many other atomic properties:
-          | Property | `target_tensor_irreps` |
-          |----------|------------------------|
-          | Atomic energy | `"0e"` |
-          | Forces | `"1o"` |
-          | Electric field gradients (EFG) | `"2e"` |
-          | Full magnetic shielding tensor | `"0e + 1o + 2e"` |
-          | Symmetric magnetic shielding tensor | `"0e + 2e"` |
-
-          """)
+    ```yaml
+    target_tensor_irreps: "0e + 1e + 2e"
+    ```
+    
+    This means the model is asked to learn the isotropic scalar part (0e), the antisymmetric part (1e), and the traceless symmetric tensor part (2e) of the shielding tensor. Changing this single line allows the same model to learn many other atomic properties with the same overall workflow.
+    Changing this single line allows the same model to learn many other atomic properties:
+    
+    | Property | `target_tensor_irreps` |
+    |----------|------------------------|
+    | Atomic energy | `"0e"` |
+    | Forces | `"1o"` |
+    | Electric field gradients (EFG) | `"2e"` |
+    | Full magnetic shielding tensor | `"0e + 1o + 2e"` |
+    | Symmetric magnetic shielding tensor | `"0e + 2e"` |
+""")
     return
 
 
